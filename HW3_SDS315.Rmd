@@ -1,0 +1,298 @@
+---
+title: "Home Work 3"
+author: "Nicholas Nasser (UT EID - nan823)"
+date: "GitHub Repository Link - insert link"
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(ggplot2)
+library(minpack.lm)
+library(mosaic)
+library(kableExtra)
+
+creat = read.csv("creatinine.csv")
+market = read.csv("marketmodel.csv")
+covid = read.csv("covid.csv")
+milk = read.csv("milk.csv")
+
+```
+
+## Problem 1
+
+#### Part A
+
+```{r, results = FALSE}
+
+model_cr = lm(creatclear ~ age, data = creat)
+
+pred_55 = tribble(~age,
+             55)
+
+round(predict(model_cr, newdata = pred_55), 3)
+
+round(coef(model_cr), 3)
+
+```
+
+&nbsp;
+
+We should expect a creatinine clearance rate for a 55 year old to be approximately 113.723 mL/min. I determined this number by first creating a linear model for the creatinine data set (x = age, y = creatclear). Then, I created a new tibble with one column (age) and one data point (55) and used the predict function to input the data point into the linear model.
+
+&nbsp;
+
+Linear  Model  Equation: y = 147.813 - 0.62x
+
+&nbsp;
+
+#### Part B
+
+&nbsp;
+
+With one added year of age, an average person's creatinine clearance rate decreases by 0.62 mL/minute. I determined this by asking R for the coefficients of my creatinine linear model and focusing specifically on the slope, which describes the rate of change in (mL/minute)/year.
+
+&nbsp;
+
+#### Part C
+
+```{r, results = FALSE}
+
+cr_comp = tribble(~age,
+             40,
+             60)
+
+cr_comp = cr_comp %>%
+  
+  mutate(creatclear = round(predict(model_cr, newdata = cr_comp), 3))
+
+135 - 123.020
+
+112 - 110.624
+
+```
+
+&nbsp;
+
+A 40 year old with a creatinine clearance rate of 135 mL/min is healthier for his or her age than a 60 year old with a clearance rate of 112 mL/min. Using my creatinine linear model, I generated predicted values for a 40 year old and a 60 year old. The residuals between these predicted values and the actual experimental values allowed me to determine who was healthier. Below are equations demonstrating this conclusion.
+
+&nbsp;
+
+Predicted Value for a 40 year old: y = $147.813 - 0.62 * 40 \approx 123.020$ mL/min
+
+Predicted Value for a 60 year old: y = $147.813 - 0.62 * 60 \approx 110.624$ mL/min
+
+&nbsp;
+
+Approximation signs are included because constants/coefficients in the linear equations shown are rounded; actual "approximated" values are more accurate since they are R's exact calculation (also rounded).
+
+&nbsp;
+
+Residual for 40 year old: 135 - 123.020 = 11.98
+
+Residual for 60 year old: 112 - 110.624 = 1.376
+
+&nbsp;
+
+Evidently, the 40 year old has a clearance rate that is 11.98 mL/min higher than average for his or her age, while the 60 year old has a clearance rate that is only 1.376 mL/min higher than average for his or her age.
+
+\newpage
+
+## Problem 2
+
+```{r, results = FALSE}
+
+model_aapl = lm(AAPL ~ SPY, data = market)
+
+coef(model_aapl)
+
+rsquared(model_aapl)
+
+```
+
+```{r, results = FALSE}
+
+model_goog = lm(GOOG ~ SPY, data = market)
+
+coef(model_goog)
+
+rsquared(model_goog)
+
+```
+
+```{r, results = FALSE}
+
+model_mrk = lm(MRK ~ SPY, data = market)
+
+coef(model_mrk)
+
+rsquared(model_mrk)
+
+```
+
+```{r, results = FALSE}
+
+model_jnj = lm(JNJ ~ SPY, data = market)
+
+coef(model_jnj)
+
+rsquared(model_jnj)
+
+```
+
+```{r, results = FALSE}
+
+model_wmt = lm(WMT ~ SPY, data = market)
+
+coef(model_wmt)
+
+rsquared(model_wmt)
+
+```
+
+```{r, results = FALSE}
+
+model_tgt = lm(TGT ~ SPY, data = market)
+
+coef(model_tgt)
+
+rsquared(model_tgt)
+
+```
+
+```{r}
+
+stock_reg = tribble(
+  ~Ticker, ~Intercept, ~Slope, ~Rsquared,
+   "AAPL",    0.00919,  1.066,    0.0134,
+   "GOOG",   0.000233,  0.997,     0.648,
+    "MRK",  -0.000154,  0.714,     0.484,
+    "JNJ", -0.0000242,  0.677,     0.502,
+    "WMT",   0.000678,  0.519,     0.285,
+    "TGT",    0.00158,  0.708,     0.248)
+
+```
+
+#### Introduction - What is Beta, and How is it Calculated?
+
+&nbsp;
+
+In economic terms, the Beta of a stock measures the "systematic risk" of a firm, or the portion of a firm's total risk that is based directly on the value of the overall stock market. In mathematical terms, the Beta ($\beta_{1}$^(k)^) of a stock is the slope of a linear equation that represents the relationship between the stock market's value (*X~t~*) and said stock (*Y~t~*^(k)^). This linear equation is called the Capital Asset Pricing Model, and is shown below.
+
+&nbsp;
+
+*Y~t~*^(k)^ = $\beta_{0}$^(k)^ + $\beta_{1}$^(k)^*X~t~* + *e~t~*^(k)^
+
+&nbsp;
+
+In a perfect world, the residual (*e~t~*^(k)^) and the intercept ($\beta_{0}$^(k)^) would be negligible values, so a percent change in a specific stock's value will be determined by a percent change in the stock market's value multiplied by Beta. For example, let's say the New York Stock Exchange increases in value by 2 percent, and company X has a Beta of 1.2. With a negligible intercept and residual, the change in value should be:
+
+&nbsp;
+
+*Y~t~*^(k)^ = 1.2 x 2 = 2.4% increase in the value of company X
+
+&nbsp;
+
+So, we can see that Beta tells us how sensitive a specific stock's value is to a change in the overall stock market. If you want to calculate Beta yourself, you can create a linear model of daily changes in a specific stock's value by daily changes in the stock market's value, and then find the slope of the model.
+
+#### CAPM Linear Regression Table
+
+&nbsp;
+
+```{r, results = TRUE}
+
+stock_reg %>%
+  
+kbl(caption = "Regression Statistics for 6 Fortune 500 Companies") %>%
+    
+    kable_styling(latex_options = "hold_position")
+
+```
+
+&nbsp;
+
+The table above displays regression statistics for 6 different companies in the S&P 500. The intercept and slope columns correspond to the Capital Asset Pricing Model's $\beta_{0}$^(k)^ and $\beta_{1}$^(k)^ respectively, and the Rsquared column represents the proportion (from 0 to 1) of variation that is predictable for each stock.
+
+#### Systematic Risk
+
+&nbsp;
+
+After performing the appropriate analysis on the market model data set, I can conclude that the stock with the lowest systematic risk is Walmart, because its $\beta_{1}$^(k)^ is the lowest (0.519). Conversely, the stock with the highest systematic risk is Apple, because its $\beta_{1}$^(k)^ is the highest (1.066).
+
+\newpage
+
+## Problem 3
+
+After creating linear models for the exponential growth of Covid cases in Italy and Spain separately, I was able to determine the growth rates and doubling times for each country.
+
+```{r, results = FALSE}
+
+covid_italy = filter(covid, country == "Italy")
+
+model_italy = lm(log(deaths) ~ days_since_first_death, data = covid_italy)
+
+coef(model_italy)
+
+70 / (coef(model_italy)[2] * 100)
+
+```
+#### Italy
+
+&nbsp;
+
+The growth rate of Covid cases in Italy was 18.322%, and the doubling time of cases was 4 days.
+
+```{r, results = FALSE}
+
+covid_spain = filter(covid, country == "Spain")
+
+model_spain = lm(log(deaths) ~ days_since_first_death, data = covid_spain)
+
+coef(model_spain)
+
+70 / (coef(model_spain)[2] * 100)
+
+```
+#### Spain
+
+&nbsp;
+
+The growth rate of Covid cases in Spain was 27.624%, and the doubling time of cases was 3 days.
+
+#### Visualization
+
+&nbsp;
+
+```{r, fig.align = "center", fig.height = 4, fig.width = 7}
+
+ggplot(covid) + geom_line(aes(x = days_since_first_death, y = deaths, color = country)) + labs(title = "Days Since First Death vs. Daily Recorded Deaths by Country", x = "Days Since First Death", y = "Daily Deaths", color = "Country")
+
+```
+
+&nbsp;
+
+Graphing Covid cases by days since the first death for each country verifies that the statistics produced previously using linear regression are accurate, as we can see that cases shoot up in Spain faster than they do in Italy, taking less time to double within the time frame of the data set.
+
+&nbsp;
+
+## Problem 4
+
+```{r, results = FALSE}
+
+model_milk = lm(log(sales) ~ log(price), data = milk)
+
+coef(model_milk)
+
+```
+
+Since we are looking at a power law relationship, I found the estimated price elasticity for demand of milk by creating a linear model using the natural logarithms of both the price and sales variables, and then calculating the slope of the model. For this particular data set, the price elasticity was -1.619. That is, a 1% increase in price will cause a 1.619% decrease in sales, and vice versa.
+
+
+
+
+
+
+
