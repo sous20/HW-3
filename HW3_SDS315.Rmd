@@ -1,7 +1,7 @@
 ---
 title: "Home Work 3"
 author: "Nicholas Nasser (UT EID - nan823)"
-date: "GitHub Repository Link - insert link"
+date: "GitHub Repository Link - https://github.com/sous20/HW-3"
 output: pdf_document
 ---
 
